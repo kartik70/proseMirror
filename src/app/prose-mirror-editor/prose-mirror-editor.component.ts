@@ -1,39 +1,83 @@
-import { Component, ViewChild } from '@angular/core';
-
-import { EditorState } from 'prosemirror-state';
-import { EditorView } from 'prosemirror-view';
-import { Schema, DOMParser } from 'prosemirror-model';
-import { schema } from 'prosemirror-schema-basic';
-import { addListNodes } from 'prosemirror-schema-list';
-import {exampleSetup} from "prosemirror-example-setup";
+// prose-mirror-editor.component.ts
+import { Component, ElementRef, ViewChild } from '@angular/core';
+import { EditorState, Transaction } from 'prosemirror-state';
+import { DirectEditorProps, EditorView } from 'prosemirror-view';
+import { DOMParser } from 'prosemirror-model';
+import { history, redo, undo } from 'prosemirror-history';
+import { mySchema } from './schema';
+import { toggleMark, setBlockType } from 'prosemirror-commands';
+import { keymap } from 'prosemirror-keymap';
+import { baseKeymap } from 'prosemirror-commands';
+import { dropCursor } from 'prosemirror-dropcursor';
+import { gapCursor } from 'prosemirror-gapcursor';
 
 @Component({
   selector: 'app-prose-mirror-editor',
-  standalone: true,
-  imports: [],
   templateUrl: './prose-mirror-editor.component.html',
-  styleUrl: './prose-mirror-editor.component.scss'
+  standalone: true,
+  styleUrls: ['./prose-mirror-editor.component.scss']
 })
 export class ProseMirrorEditorComponent {
-  @ViewChild('editor') editor:any;
-  @ViewChild('content') content:any;
+  @ViewChild('editor', { static: true }) editor!: ElementRef;
+  view!: EditorView;
 
-  name = 'Angular 17';
+  constructor() { }
 
-  ngAfterViewInit() {
-    // Mix the nodes from prosemirror-schema-list into the basic schema to
-    // create a schema with list support.
-    const mySchema = new Schema({
-      nodes: addListNodes(schema.spec.nodes, "paragraph block*", "block"),
-      marks: schema.spec.marks
-    })
+  ngOnInit(): void {
+    const contentElement = document.querySelector('#content');
 
-    const view = new EditorView(this.editor.nativeElement, {
-      state: EditorState.create({
-        doc: DOMParser.fromSchema(mySchema).parse(this.content.nativeElement),
-        plugins: exampleSetup({ schema: mySchema })
-      })
-    })
+    if (!contentElement) {
+      throw new Error('Content element not found');
+    }
 
+    const doc = DOMParser.fromSchema(mySchema).parse(contentElement);
+
+    const state = EditorState.create({
+      doc,
+      schema: mySchema,
+      plugins: [
+        history(),
+        keymap({
+          'Mod-b': toggleMark(mySchema.marks.bold),
+          'Mod-i': toggleMark(mySchema.marks.italic),
+          'Mod-z': undo,
+          'Mod-y': redo,
+          'Mod-Shift-z': redo
+        }),
+        keymap(baseKeymap),
+        dropCursor(),
+        gapCursor()
+      ]
+    });
+
+    const viewProps: DirectEditorProps = {
+      state,
+      dispatchTransaction: (transaction: Transaction) => {
+        const newState = this.view.state.apply(transaction);
+        this.view.updateState(newState);
+      }
+    };
+
+    this.view = new EditorView(this.editor.nativeElement, viewProps);
+  }
+
+  toggleBold() {
+    toggleMark(this.view.state.schema.marks['bold'])(this.view.state, this.view.dispatch);
+  }
+
+  toggleItalic() {
+    toggleMark(this.view.state.schema.marks['italic'])(this.view.state, this.view.dispatch);
+  }
+
+  toggleHeading(level: number) {
+    setBlockType(this.view.state.schema.nodes['heading'], { level })(this.view.state, this.view.dispatch);
+  }
+
+  undo = () => {
+    undo(this.view.state, this.view.dispatch);
+  }
+
+  redo = () => {
+    redo(this.view.state, this.view.dispatch);
   }
 }
