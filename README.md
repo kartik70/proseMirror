@@ -1,27 +1,56 @@
-# ProseMirror
+# ProseMirror Editor — Angular Integration
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 14.2.3.
+A rich text editor built by integrating [ProseMirror](https://prosemirror.net/) into an Angular application. Implements a custom document schema, toolbar menu, and full keyboard command support as a reusable Angular component.
 
-## Development server
+## Features
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+- Custom ProseMirror schema (headings, lists, bold, italic, links)
+- Toolbar menu with formatting controls built with `prosemirror-menu`
+- Keyboard shortcuts via `prosemirror-keymap`
+- Undo/redo history via `prosemirror-history`
+- Encapsulated as a standalone Angular component — drop it into any Angular project
 
-## Code scaffolding
+## Tech Stack
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+![Angular](https://img.shields.io/badge/Angular_14-DD0031?style=flat&logo=angular&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
+![ProseMirror](https://img.shields.io/badge/ProseMirror-000000?style=flat)
 
-## Build
+| Package | Purpose |
+|---|---|
+| `prosemirror-state` / `prosemirror-view` | Core editor state and DOM rendering |
+| `prosemirror-model` | Document schema definition |
+| `prosemirror-commands` | Built-in editing commands |
+| `prosemirror-keymap` | Keyboard shortcut bindings |
+| `prosemirror-history` | Undo/redo stack |
+| `prosemirror-menu` | Toolbar UI |
+| `prosemirror-schema-list` | List node support |
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+## Project Structure
 
-## Running unit tests
+```
+src/app/prose-mirror-editor/
+├── prose-mirror-editor.component.ts   # Angular component wrapper
+├── prose-mirror-editor.component.html # Template
+├── schema.ts                          # Custom ProseMirror document schema
+└── menu.ts                            # Toolbar menu configuration
+```
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+## Getting Started
 
-## Running end-to-end tests
+```bash
+git clone https://github.com/kartik70/proseMirror.git
+cd proseMirror
+npm install
+ng serve
+```
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+Open [http://localhost:4200](http://localhost:4200)
 
-## Further help
+## Why ProseMirror?
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+ProseMirror gives precise control over the document model, selection, and transformations — unlike contenteditable-based editors. This makes it suitable for structured documents where the schema must be enforced (e.g., no arbitrary HTML allowed).
+
+## Author
+
+[Kartik Kakad](https://github.com/kartik70)
